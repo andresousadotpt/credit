@@ -16,7 +16,6 @@ export default function CreditSimulator() {
     taeg,
     setTaeg,
     monthlyPayment,
-    setMonthlyPayment,
     months,
     setMonths,
     earlyRepayments,
@@ -114,7 +113,6 @@ export default function CreditSimulator() {
           loanAmount={loanAmount}
           setLoanAmount={setLoanAmount}
           monthlyPayment={monthlyPayment}
-          setMonthlyPayment={setMonthlyPayment}
           tan={tan}
           setTan={setTan}
           taeg={taeg}

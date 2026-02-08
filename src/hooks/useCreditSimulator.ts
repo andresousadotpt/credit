@@ -7,7 +7,6 @@ interface PersistedCreditData {
   loanAmount: number;
   tan: number;
   taeg: number;
-  monthlyPayment: number;
   months: number;
   earlyRepayments: EarlyRepayment[];
   creditType: CreditType;
@@ -18,12 +17,18 @@ const defaults: PersistedCreditData = {
   loanAmount: 42975,
   tan: 4.13,
   taeg: 5.08,
-  monthlyPayment: 593,
   months: 36,
   earlyRepayments: [],
   creditType: 'consumer',
   amortizationMode: 'reduce_term',
 };
+
+function calculateMonthlyPayment(principal: number, annualRate: number, numMonths: number): number {
+  if (numMonths <= 0) return 0;
+  const monthlyRate = annualRate / 100 / 12;
+  if (monthlyRate === 0) return principal / numMonths;
+  return principal * monthlyRate / (1 - Math.pow(1 + monthlyRate, -numMonths));
+}
 
 function loadSaved(): PersistedCreditData {
   try {
@@ -41,18 +46,22 @@ export function useCreditSimulator() {
   const [loanAmount, setLoanAmount] = useState(saved.loanAmount);
   const [tan, setTan] = useState(saved.tan);
   const [taeg, setTaeg] = useState(saved.taeg);
-  const [monthlyPayment, setMonthlyPayment] = useState(saved.monthlyPayment);
   const [months, setMonths] = useState(saved.months);
   const [earlyRepayments, setEarlyRepayments] = useState<EarlyRepayment[]>(saved.earlyRepayments);
   const [creditType, setCreditType] = useState<CreditType>(saved.creditType);
   const [amortizationMode, setAmortizationMode] = useState<AmortizationMode>(saved.amortizationMode);
 
+  const monthlyPayment = useMemo(
+    () => calculateMonthlyPayment(loanAmount, tan, months),
+    [loanAmount, tan, months]
+  );
+
   useEffect(() => {
     const data: PersistedCreditData = {
-      loanAmount, tan, taeg, monthlyPayment, months, earlyRepayments, creditType, amortizationMode,
+      loanAmount, tan, taeg, months, earlyRepayments, creditType, amortizationMode,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  }, [loanAmount, tan, taeg, monthlyPayment, months, earlyRepayments, creditType, amortizationMode]);
+  }, [loanAmount, tan, taeg, months, earlyRepayments, creditType, amortizationMode]);
 
   const addRepayment = () => {
     setEarlyRepayments(prev => [...prev, { id: Date.now(), amount: 5000, month: 12 }]);
@@ -141,7 +150,7 @@ export function useCreditSimulator() {
     loanAmount, setLoanAmount,
     tan, setTan,
     taeg, setTaeg,
-    monthlyPayment, setMonthlyPayment,
+    monthlyPayment,
     months, setMonths,
     earlyRepayments,
     creditType, setCreditType,

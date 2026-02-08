@@ -9,7 +9,6 @@ interface InputPanelProps {
   loanAmount: number;
   setLoanAmount: (val: number) => void;
   monthlyPayment: number;
-  setMonthlyPayment: (val: number) => void;
   tan: number;
   setTan: (val: number) => void;
   taeg: number;
@@ -24,7 +23,6 @@ export default function InputPanel({
   loanAmount,
   setLoanAmount,
   monthlyPayment,
-  setMonthlyPayment,
   tan,
   setTan,
   taeg,
@@ -113,16 +111,6 @@ export default function InputPanel({
           icon="💰"
         />
         <InputField
-          label={t('params.fields.monthlyPayment')}
-          value={monthlyPayment}
-          onChange={setMonthlyPayment}
-          suffix="€"
-          min={50}
-          max={10000}
-          step={10}
-          icon="📅"
-        />
-        <InputField
           label={t('params.fields.tan')}
           value={tan}
           onChange={setTan}
@@ -152,6 +140,36 @@ export default function InputPanel({
           step={1}
           icon="⏱️"
         />
+      </div>
+
+      {/* Calculated monthly payment */}
+      <div style={{
+        background: 'var(--bg-card-alt)',
+        border: '1px solid var(--border-input)',
+        borderRadius: 12,
+        padding: '16px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}>
+        <span style={{
+          fontSize: 12,
+          fontWeight: 600,
+          color: 'var(--text-muted)',
+          textTransform: 'uppercase',
+          letterSpacing: 1,
+          fontFamily: "'Space Mono', monospace",
+        }}>
+          📅 {t('params.fields.monthlyPayment')}
+        </span>
+        <span style={{
+          fontSize: 22,
+          fontWeight: 700,
+          color: 'var(--color-blue)',
+          fontFamily: "'Space Mono', monospace",
+        }}>
+          {monthlyPayment.toFixed(2)} €
+        </span>
       </div>
     </div>
   );

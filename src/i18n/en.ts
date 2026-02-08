@@ -165,4 +165,15 @@ export const en = {
     debt: 'Balance after payment: Previous debt − Principal − Extra repay. Basis for calculating next interest.',
     earlyRepayments: 'Add one or more early repayments in different months. Each one reduces the outstanding principal in that month and reduces future interest. The commission is calculated individually for each repayment according to the credit type and Portuguese legislation.',
   },
+  share: {
+    button: 'Share',
+    copied: 'Link copied!',
+    banner: 'You are viewing a shared simulation.',
+    save: 'Save to my data',
+    saved: 'Saved!',
+  },
+  clear: {
+    button: 'Clear',
+    done: 'Data cleared!',
+  },
 };

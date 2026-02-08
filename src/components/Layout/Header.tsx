@@ -2,7 +2,14 @@ import { useI18n } from '../../i18n';
 import { useTheme } from '../../context/ThemeContext';
 import { APP_CONFIG } from '../../config';
 
-export default function Header() {
+interface HeaderProps {
+  onShare: () => void;
+  copyFeedback: boolean;
+  onClear: () => void;
+  clearFeedback: boolean;
+}
+
+export default function Header({ onShare, copyFeedback, onClear, clearFeedback }: HeaderProps) {
   const { t, language, setLanguage } = useI18n();
   const { theme, toggleTheme } = useTheme();
 
@@ -117,6 +124,85 @@ export default function Header() {
             title={theme === 'dark' ? t('settings.lightMode') : t('settings.darkMode')}
           >
             {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
+
+          {/* Share button */}
+          <button
+            onClick={onShare}
+            style={{
+              padding: '6px 12px',
+              borderRadius: 8,
+              fontSize: 11,
+              fontWeight: 600,
+              cursor: 'pointer',
+              border: copyFeedback ? '1px solid rgba(74,222,128,0.4)' : '1px solid var(--border-card)',
+              background: copyFeedback ? 'rgba(74,222,128,0.15)' : 'var(--bg-card)',
+              color: copyFeedback ? 'var(--color-green)' : 'var(--text-secondary)',
+              transition: 'all 0.2s',
+              fontFamily: "'DM Sans', sans-serif",
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+            }}
+            title={t('share.button')}
+          >
+            {copyFeedback ? (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                {t('share.copied')}
+              </>
+            ) : (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+                {t('share.button')}
+              </>
+            )}
+          </button>
+
+          {/* Clear button */}
+          <button
+            onClick={onClear}
+            style={{
+              padding: '6px 12px',
+              borderRadius: 8,
+              fontSize: 11,
+              fontWeight: 600,
+              cursor: 'pointer',
+              border: clearFeedback ? '1px solid rgba(74,222,128,0.4)' : '1px solid var(--border-card)',
+              background: clearFeedback ? 'rgba(74,222,128,0.15)' : 'var(--bg-card)',
+              color: clearFeedback ? 'var(--color-green)' : 'var(--text-secondary)',
+              transition: 'all 0.2s',
+              fontFamily: "'DM Sans', sans-serif",
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+            }}
+            title={t('clear.button')}
+          >
+            {clearFeedback ? (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                {t('clear.done')}
+              </>
+            ) : (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+                {t('clear.button')}
+              </>
+            )}
           </button>
 
           {/* GitHub link */}

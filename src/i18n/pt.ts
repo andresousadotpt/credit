@@ -165,4 +165,15 @@ export const pt = {
     debt: 'Saldo após pagamento: Dívida anterior − Capital − Amort. extra. Base de cálculo dos juros seguintes.',
     earlyRepayments: 'Adiciona uma ou mais amortizações antecipadas em meses diferentes. Cada uma abate ao capital em dívida nesse mês e reduz os juros futuros. A comissão é calculada individualmente para cada amortização conforme o tipo de crédito e legislação portuguesa.',
   },
+  share: {
+    button: 'Partilhar',
+    copied: 'Link copiado!',
+    banner: 'Estás a ver uma simulação partilhada.',
+    save: 'Guardar nos meus dados',
+    saved: 'Guardado!',
+  },
+  clear: {
+    button: 'Limpar',
+    done: 'Dados limpos!',
+  },
 };

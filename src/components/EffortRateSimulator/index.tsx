@@ -1,15 +1,16 @@
 import { useI18n } from '../../i18n';
 import { useEffortRate } from '../../hooks/useEffortRate';
+import type { EffortShareInput } from '../../utils/sharing';
 import InputField from '../ui/InputField';
 import InfoTooltip from '../ui/InfoTooltip';
 
-export default function EffortRateSimulator() {
+export default function EffortRateSimulator({ sharedData }: { sharedData?: EffortShareInput }) {
   const { t, formatCurrency } = useI18n();
   const {
     monthlyIncome, setMonthlyIncome,
     debts, addDebt, removeDebt, updateDebt,
     totalDebts, effortRate, availableIncome, riskLevel,
-  } = useEffortRate();
+  } = useEffortRate(sharedData);
 
   const riskColor =
     riskLevel === 'low' ? 'var(--color-green)' :

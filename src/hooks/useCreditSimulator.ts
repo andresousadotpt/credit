@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { AmortizationRow, EarlyRepayment, CreditType, AmortizationMode } from '../types';
+import type { CreditShareInput } from '../utils/sharing';
 
 const STORAGE_KEY = 'credit-sim-data';
 
@@ -23,6 +24,7 @@ const defaults: PersistedCreditData = {
   amortizationMode: 'reduce_term',
 };
 
+
 function calculateMonthlyPayment(principal: number, annualRate: number, numMonths: number): number {
   if (numMonths <= 0) return 0;
   const monthlyRate = annualRate / 100 / 12;
@@ -30,7 +32,22 @@ function calculateMonthlyPayment(principal: number, annualRate: number, numMonth
   return principal * monthlyRate / (1 - Math.pow(1 + monthlyRate, -numMonths));
 }
 
-function loadSaved(): PersistedCreditData {
+function loadSaved(sharedData?: CreditShareInput): PersistedCreditData {
+  if (sharedData) {
+    return {
+      loanAmount: sharedData.loanAmount,
+      tan: sharedData.tan,
+      taeg: sharedData.taeg,
+      months: sharedData.months,
+      creditType: sharedData.creditType,
+      amortizationMode: sharedData.amortizationMode,
+      earlyRepayments: sharedData.earlyRepayments.map((r, i) => ({
+        id: Date.now() + i,
+        amount: r.amount,
+        month: r.month,
+      })),
+    };
+  }
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
@@ -41,8 +58,8 @@ function loadSaved(): PersistedCreditData {
   return defaults;
 }
 
-export function useCreditSimulator() {
-  const saved = loadSaved();
+export function useCreditSimulator(sharedData?: CreditShareInput) {
+  const saved = loadSaved(sharedData);
   const [loanAmount, setLoanAmount] = useState(saved.loanAmount);
   const [tan, setTan] = useState(saved.tan);
   const [taeg, setTaeg] = useState(saved.taeg);
@@ -146,6 +163,21 @@ export function useCreditSimulator() {
   const finalBalance = data.length > 0 ? data[data.length - 1].balance : loanAmount;
   const actualMonths = data.length;
 
+  const clear = () => {
+    setLoanAmount(0);
+    setTan(0);
+    setTaeg(0);
+    setMonths(0);
+    setEarlyRepayments([]);
+    setCreditType('consumer');
+    setAmortizationMode('reduce_term');
+  };
+
+  const getShareData = (): CreditShareInput => ({
+    loanAmount, tan, taeg, months, creditType, amortizationMode,
+    earlyRepayments: earlyRepayments.map(r => ({ amount: r.amount, month: r.month })),
+  });
+
   return {
     loanAmount, setLoanAmount,
     tan, setTan,
@@ -161,5 +193,6 @@ export function useCreditSimulator() {
     data,
     totalInterest, totalPrincipal, totalEarlyRepay, totalCommission, totalPaid,
     finalBalance, actualMonths,
+    getShareData, clear,
   };
 }

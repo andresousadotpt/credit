@@ -1,12 +1,13 @@
 import { useI18n } from '../../i18n';
 import { useCreditSimulator } from '../../hooks/useCreditSimulator';
+import type { CreditShareInput } from '../../utils/sharing';
 import InputPanel from './InputPanel';
 import EarlyRepayments from './EarlyRepayments';
 import SummaryCards from './SummaryCards';
 import Chart from './Chart';
 import AmortizationTable from './AmortizationTable';
 
-export default function CreditSimulator() {
+export default function CreditSimulator({ sharedData }: { sharedData?: CreditShareInput }) {
   const { t } = useI18n();
   const {
     loanAmount,
@@ -36,7 +37,7 @@ export default function CreditSimulator() {
     totalPaid,
     finalBalance,
     actualMonths,
-  } = useCreditSimulator();
+  } = useCreditSimulator(sharedData);
 
   return (
     <div style={{ maxWidth: 1000, margin: '0 auto' }}>

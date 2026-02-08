@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Debt, RiskLevel } from '../types';
+import type { EffortShareInput } from '../utils/sharing';
 
 const STORAGE_KEY = 'credit-sim-effort';
 
@@ -13,7 +14,18 @@ const defaults: PersistedEffortData = {
   debts: [],
 };
 
-function loadSaved(): PersistedEffortData {
+
+function loadSaved(sharedData?: EffortShareInput): PersistedEffortData {
+  if (sharedData) {
+    return {
+      monthlyIncome: sharedData.monthlyIncome,
+      debts: sharedData.debts.map((d, i) => ({
+        id: Date.now() + i,
+        name: d.name,
+        amount: d.amount,
+      })),
+    };
+  }
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
@@ -24,8 +36,8 @@ function loadSaved(): PersistedEffortData {
   return defaults;
 }
 
-export function useEffortRate() {
-  const saved = loadSaved();
+export function useEffortRate(sharedData?: EffortShareInput) {
+  const saved = loadSaved(sharedData);
   const [monthlyIncome, setMonthlyIncome] = useState(saved.monthlyIncome);
   const [debts, setDebts] = useState<Debt[]>(saved.debts);
 
@@ -54,9 +66,20 @@ export function useEffortRate() {
     effortRate <= 50 ? 'moderate' :
     'high';
 
+  const clear = () => {
+    setMonthlyIncome(0);
+    setDebts([]);
+  };
+
+  const getShareData = (): EffortShareInput => ({
+    monthlyIncome,
+    debts: debts.map(d => ({ name: d.name, amount: d.amount })),
+  });
+
   return {
     monthlyIncome, setMonthlyIncome,
     debts, addDebt, removeDebt, updateDebt,
     totalDebts, effortRate, availableIncome, riskLevel,
+    getShareData, clear,
   };
 }

@@ -22,6 +22,8 @@ export default function CreditSimulator() {
     earlyRepayments,
     creditType,
     setCreditType,
+    amortizationMode,
+    setAmortizationMode,
     addRepayment,
     removeRepayment,
     updateRepayment,
@@ -65,11 +67,10 @@ export default function CreditSimulator() {
             color: 'var(--text-secondary)',
             lineHeight: 1.5,
           }}>
-            {t('warnings.vibeCoded.description')}{' '}
-            <strong style={{ color: 'var(--text-highlight)' }}>
-              {t('warnings.vibeCoded.notAudited')}
-            </strong>. {' '}
-            {t('warnings.vibeCoded.tooltipHint')}
+            {t('warnings.vibeCoded.description', {
+              notAudited: t('warnings.vibeCoded.notAudited'),
+              tooltipHint: t('warnings.vibeCoded.tooltipHint'),
+            })}
           </div>
         </div>
       </div>
@@ -134,6 +135,8 @@ export default function CreditSimulator() {
             creditType={creditType}
             months={months}
             loanAmount={loanAmount}
+            amortizationMode={amortizationMode}
+            setAmortizationMode={setAmortizationMode}
           />
         </div>
       </div>

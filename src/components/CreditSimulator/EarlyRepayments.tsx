@@ -1,6 +1,6 @@
 import { useI18n } from '../../i18n';
 import InfoTooltip from '../ui/InfoTooltip';
-import type { EarlyRepayment, CreditType } from '../../types';
+import type { EarlyRepayment, CreditType, AmortizationMode } from '../../types';
 
 interface EarlyRepaymentsProps {
   earlyRepayments: EarlyRepayment[];
@@ -12,6 +12,8 @@ interface EarlyRepaymentsProps {
   creditType: CreditType;
   months: number;
   loanAmount: number;
+  amortizationMode: AmortizationMode;
+  setAmortizationMode: (mode: AmortizationMode) => void;
 }
 
 export default function EarlyRepayments({
@@ -24,6 +26,8 @@ export default function EarlyRepayments({
   creditType,
   months,
   loanAmount,
+  amortizationMode,
+  setAmortizationMode,
 }: EarlyRepaymentsProps) {
   const { t, formatCurrency } = useI18n();
 
@@ -75,6 +79,40 @@ export default function EarlyRepayments({
         >
           + {t('earlyRepayments.add')}
         </button>
+      </div>
+
+      {/* Amortization Mode Toggle */}
+      <div style={{
+        display: 'flex', gap: 8, marginBottom: 16,
+      }}>
+        {([
+          { key: 'reduce_term' as AmortizationMode, label: t('earlyRepayments.mode.reduceTerm'), desc: t('earlyRepayments.mode.reduceTermDesc'), icon: '⏱️' },
+          { key: 'reduce_payment' as AmortizationMode, label: t('earlyRepayments.mode.reducePayment'), desc: t('earlyRepayments.mode.reducePaymentDesc'), icon: '💶' },
+        ]).map(mode => (
+          <button
+            key={mode.key}
+            onClick={() => setAmortizationMode(mode.key)}
+            style={{
+              flex: 1, padding: '10px 12px', borderRadius: 10,
+              fontSize: 12, fontWeight: 600, cursor: 'pointer',
+              textAlign: 'left', lineHeight: 1.4,
+              border: amortizationMode === mode.key
+                ? '1px solid rgba(250,204,21,0.4)'
+                : '1px solid var(--border-card)',
+              background: amortizationMode === mode.key
+                ? 'rgba(250,204,21,0.08)'
+                : 'var(--bg-card-alt)',
+              color: amortizationMode === mode.key
+                ? 'var(--color-yellow)'
+                : 'var(--text-muted)',
+              transition: 'all 0.2s',
+              fontFamily: "'DM Sans', sans-serif",
+            }}
+          >
+            <div style={{ marginBottom: 2 }}>{mode.icon} {mode.label}</div>
+            <div style={{ fontSize: 10, fontWeight: 400, opacity: 0.7 }}>{mode.desc}</div>
+          </button>
+        ))}
       </div>
 
       {earlyRepayments.length === 0 && (

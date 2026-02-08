@@ -19,3 +19,12 @@ export interface EarlyRepayment {
 export type CreditType = 'housing_variable' | 'housing_fixed' | 'consumer';
 export type Language = 'pt' | 'en';
 export type Theme = 'dark' | 'light';
+
+export interface Debt {
+  id: number;
+  name: string;
+  amount: number;
+}
+
+export type RiskLevel = 'low' | 'moderate' | 'high';
+export type AmortizationMode = 'reduce_term' | 'reduce_payment';

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useI18n } from '../../i18n';
 
 interface InfoTooltipProps {
@@ -7,12 +8,26 @@ interface InfoTooltipProps {
 
 export default function InfoTooltip({ text }: InfoTooltipProps) {
   const [show, setShow] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const iconRef = useRef<HTMLSpanElement>(null);
   const { t } = useI18n();
+
+  const handleEnter = useCallback(() => {
+    if (iconRef.current) {
+      const rect = iconRef.current.getBoundingClientRect();
+      setPos({
+        top: rect.top,
+        left: rect.left + rect.width / 2,
+      });
+    }
+    setShow(true);
+  }, []);
 
   return (
     <span
-      style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'help' }}
-      onMouseEnter={() => setShow(true)}
+      ref={iconRef}
+      style={{ display: 'inline-flex', alignItems: 'center', cursor: 'help' }}
+      onMouseEnter={handleEnter}
       onMouseLeave={() => setShow(false)}
     >
       <span style={{
@@ -32,12 +47,12 @@ export default function InfoTooltip({ text }: InfoTooltipProps) {
         border: '1px solid var(--border-card)',
         ...(show ? { background: 'rgba(255,255,255,0.14)', color: 'var(--text-secondary)' } : {}),
       }}>ⓘ</span>
-      {show && (
+      {show && createPortal(
         <div style={{
-          position: 'absolute',
-          bottom: 'calc(100% + 10px)',
-          left: '50%',
-          transform: 'translateX(-50%)',
+          position: 'fixed',
+          top: pos.top - 10,
+          left: pos.left,
+          transform: 'translate(-50%, -100%)',
           background: 'var(--bg-tooltip)',
           border: '1px solid var(--border-tooltip)',
           borderRadius: 10,
@@ -46,11 +61,13 @@ export default function InfoTooltip({ text }: InfoTooltipProps) {
           color: 'var(--text-highlight)',
           lineHeight: 1.6,
           width: 300,
-          zIndex: 100,
+          maxWidth: 'calc(100vw - 32px)',
+          zIndex: 9999,
           boxShadow: 'var(--shadow-tooltip)',
           fontFamily: "'DM Sans', sans-serif",
           fontWeight: 400,
           whiteSpace: 'normal',
+          pointerEvents: 'none',
         }}>
           <div style={{
             fontSize: 10,
@@ -73,7 +90,8 @@ export default function InfoTooltip({ text }: InfoTooltipProps) {
             borderRight: '1px solid var(--border-tooltip)',
             borderBottom: '1px solid var(--border-tooltip)',
           }} />
-        </div>
+        </div>,
+        document.body
       )}
     </span>
   );

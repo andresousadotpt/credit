@@ -1,14 +1,58 @@
-import { useState, useMemo } from 'react';
-import type { AmortizationRow, EarlyRepayment, CreditType } from '../types';
+import { useState, useMemo, useEffect } from 'react';
+import type { AmortizationRow, EarlyRepayment, CreditType, AmortizationMode } from '../types';
+
+const STORAGE_KEY = 'credit-sim-data';
+
+interface PersistedCreditData {
+  loanAmount: number;
+  tan: number;
+  taeg: number;
+  monthlyPayment: number;
+  months: number;
+  earlyRepayments: EarlyRepayment[];
+  creditType: CreditType;
+  amortizationMode: AmortizationMode;
+}
+
+const defaults: PersistedCreditData = {
+  loanAmount: 42975,
+  tan: 4.13,
+  taeg: 5.08,
+  monthlyPayment: 593,
+  months: 36,
+  earlyRepayments: [],
+  creditType: 'consumer',
+  amortizationMode: 'reduce_term',
+};
+
+function loadSaved(): PersistedCreditData {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return { ...defaults, ...parsed };
+    }
+  } catch { /* ignore */ }
+  return defaults;
+}
 
 export function useCreditSimulator() {
-  const [loanAmount, setLoanAmount] = useState(42975);
-  const [tan, setTan] = useState(4.13);
-  const [taeg, setTaeg] = useState(5.08);
-  const [monthlyPayment, setMonthlyPayment] = useState(593);
-  const [months, setMonths] = useState(36);
-  const [earlyRepayments, setEarlyRepayments] = useState<EarlyRepayment[]>([]);
-  const [creditType, setCreditType] = useState<CreditType>('consumer');
+  const saved = loadSaved();
+  const [loanAmount, setLoanAmount] = useState(saved.loanAmount);
+  const [tan, setTan] = useState(saved.tan);
+  const [taeg, setTaeg] = useState(saved.taeg);
+  const [monthlyPayment, setMonthlyPayment] = useState(saved.monthlyPayment);
+  const [months, setMonths] = useState(saved.months);
+  const [earlyRepayments, setEarlyRepayments] = useState<EarlyRepayment[]>(saved.earlyRepayments);
+  const [creditType, setCreditType] = useState<CreditType>(saved.creditType);
+  const [amortizationMode, setAmortizationMode] = useState<AmortizationMode>(saved.amortizationMode);
+
+  useEffect(() => {
+    const data: PersistedCreditData = {
+      loanAmount, tan, taeg, monthlyPayment, months, earlyRepayments, creditType, amortizationMode,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }, [loanAmount, tan, taeg, monthlyPayment, months, earlyRepayments, creditType, amortizationMode]);
 
   const addRepayment = () => {
     setEarlyRepayments(prev => [...prev, { id: Date.now(), amount: 5000, month: 12 }]);
@@ -39,12 +83,13 @@ export function useCreditSimulator() {
 
     const monthlyRate = tan / 100 / 12;
     let balance = loanAmount;
+    let currentPayment = monthlyPayment;
     const rows: AmortizationRow[] = [];
 
     for (let i = 1; i <= months; i++) {
       if (balance <= 0) break;
       const interest = balance * monthlyRate;
-      const effectivePayment = Math.min(monthlyPayment, balance + interest);
+      const effectivePayment = Math.min(currentPayment, balance + interest);
       const principal = effectivePayment - interest;
       balance = Math.max(balance - principal, 0);
 
@@ -57,7 +102,15 @@ export function useCreditSimulator() {
         else if (creditType === 'housing_fixed') rate = 0.02;
         else rate = (months - i) > 12 ? 0.005 : 0.0025;
         commission = isExempt ? 0 : earlyRepay * rate;
+        const balanceBeforeEarlyRepay = balance;
         balance = Math.max(balance - earlyRepay, 0);
+
+        if (amortizationMode === 'reduce_payment' && balance > 0 && balanceBeforeEarlyRepay > 0) {
+          // Reduce payment proportionally to the balance reduction
+          // In the French system P is linear in B, so P_new/P_old = B_new/B_old
+          currentPayment = currentPayment * (balance / balanceBeforeEarlyRepay);
+        }
+        // reduce_term: keep same payment, loop ends sooner when balance hits 0
       }
 
       rows.push({
@@ -74,7 +127,7 @@ export function useCreditSimulator() {
       if (balance <= 0) break;
     }
     return rows;
-  }, [loanAmount, tan, monthlyPayment, months, earlyRepayments, creditType, isExempt]);
+  }, [loanAmount, tan, monthlyPayment, months, earlyRepayments, creditType, isExempt, amortizationMode]);
 
   const totalInterest = data.reduce((s, r) => s + r.interest, 0);
   const totalPrincipal = data.reduce((s, r) => s + r.principal, 0);
@@ -92,6 +145,7 @@ export function useCreditSimulator() {
     months, setMonths,
     earlyRepayments,
     creditType, setCreditType,
+    amortizationMode, setAmortizationMode,
     addRepayment, removeRepayment, updateRepayment,
     getCommissionRate,
     isExempt,
